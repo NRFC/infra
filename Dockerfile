@@ -2,7 +2,7 @@ FROM kimai/kimai-base:fpm AS base
 
 ENV MYSQL_DATABASE=drupal
 ENV MYSQL_USER=drupal
-ENV MYSQL_PASSWORD=drupal
+ENV MYSQL_PASSWORD=""
 ENV MYSQL_HOST=db
 ENV MYSQL_PORT=3306
 ENV CONFIG_SYNC_DIRECTORY='/opt/config-sync'
@@ -13,9 +13,10 @@ ENV STATE_CACHE='TRUE'
 WORKDIR /opt/drupal
 RUN apk add --no-cache git openssh
 RUN git clone https://github.com/NRFC/drupal.git /opt/drupal
-RUN mkdir /opt/config-sync
+RUN composer install --no-ansi
 
-RUN composer install
+COPY settings.98_docker_override.php /opt/drupal/web/sites/default/settings.98_docker_override.php
+COPY settings.99_db.php /opt/drupal/web/sites/default/settings.99_db.php
 
 ENTRYPOINT [ "php-fpm" ]
 
@@ -30,6 +31,6 @@ FROM base AS prod
 #  include $app_root . '/' . $site_path . '/settings.local.php';
 #}
 
-ENTRYPOINT [ "bash" ]
+#ENTRYPOINT [ "bash" ]
 
 # docker build -t nrfc/www .
