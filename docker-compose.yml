@@ -8,30 +8,13 @@ services:
       - db-data:/var/lib/mysql
       - ./initdb.d:/docker-entrypoint-initdb.d
 
-  nginx:
-    image: nginx
-    ports:
-      - 9900:80
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - web:/opt/drupal/web:ro
-    env_file: env.docker
-    restart: unless-stopped
-    depends_on:
-      - drupal
-#     healthcheck:
-#       test:  wget --spider http://nginx/health || exit 1
-#       interval: 20s
-#       start_period: 10s
-#       timeout: 10s
-#       retries: 3
-
   drupal:
-    image: nrfc/www:001
+    image: nrfc/www
     build: .
+    ports:
+        - "9900:80"
     volumes:
       - files:/opt/drupal/web/sites/default/files
-      - web:/opt/drupal/web
     env_file: env.docker
     depends_on:
       - mysql
@@ -40,7 +23,6 @@ services:
 
 volumes:
   db-data:
-  web:
   files:
 
 

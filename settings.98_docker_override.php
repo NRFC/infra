@@ -1,9 +1,6 @@
 <?php
 
-$settings['config_sync_directory'] = getenv("CONFIG_SYNC_DIRECTORY");
-$settings['hash_salt'] = getenv("HASH_SALT");
-$settings['trusted_host_patterns'] = $_ENV["TRUSTED_HOST_PATTERNS"];
-$settings['state_cache'] = getenv("STATE_CACHE");
-die(">>>" . $settings['trusted_host_patterns']);
-
-// ls /opt/drupal/web/sites/default
+$settings['config_sync_directory'] = $_ENV["CONFIG_SYNC_DIRECTORY"];
+$settings['hash_salt'] = $_ENV["HASH_SALT"];
+$settings['trusted_host_patterns'] = json_decode($_ENV["TRUSTED_HOST_PATTERNS"], true);
+$settings['state_cache'] = $_ENV["STATE_CACHE"];
