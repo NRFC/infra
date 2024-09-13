@@ -8,14 +8,14 @@ services:
       - 3306:3306
     volumes:
       - db-data:/var/lib/mysql
-      - initdb.d:/docker-entrypoint-initdb.d
+      - ./initdb.d:/docker-entrypoint-initdb.d
 
   nginx:
     image: nginx
     ports:
       - 9900:80
     volumes:
-      - ./.docker/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
     restart: unless-stopped
     depends_on:
       - drupal
