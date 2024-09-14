@@ -159,4 +159,5 @@ ENV HASH_SALT='abcde-change-me-plaese-12345'
 ENV TRUSTED_HOST_PATTERNS="['^norwichrugby\.org$','^.+\.norwichrugby\.com$']"
 ENV STATE_CACHE='TRUE'
 
-# docker build -t nrfc/www .
+# docker build -t tobybatch/nrfc .
+# docker push tobybatch/nrfc

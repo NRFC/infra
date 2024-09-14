@@ -10,7 +10,6 @@ services:
 
   drupal:
     image: nrfc/www
-    build: .
     ports:
         - "9900:80"
     volumes:
@@ -18,13 +17,11 @@ services:
     env_file: env.docker
     depends_on:
       - mysql
-#     restart: unless-stopped
-#     entrypoint: [ "env" ]
+    restart: unless-stopped
 
 volumes:
   db-data:
   files:
-
 
 # version: '3'
 #
