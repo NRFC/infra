@@ -17,12 +17,16 @@ FROM composer:${COMPOSER_VER} AS composer
 FROM php:${PHP_VER}-apache-bookworm AS apache-php-ext-base
 RUN apt-get update
 RUN apt-get install -y \
+        libavif-dev \
         libldap2-dev \
         libicu-dev \
+        libjpeg62-turbo-dev \
         libpng-dev \
         libzip-dev \
         libxslt1-dev \
         libfreetype6-dev \
+        libwebp-dev \
+        libxpm-dev \
         git
 
 FROM apache-php-ext-base AS git-src
@@ -32,7 +36,11 @@ RUN git clone https://github.com/NRFC/drupal.git /opt/drupal
 # php extension gd - 13.86s
 FROM apache-php-ext-base AS php-ext-gd
 RUN docker-php-ext-configure gd \
-        --with-freetype && \
+        --with-freetype \
+        --with-avif \
+        --with-jpeg \
+        --with-xpm \
+        --with-webp && \
     docker-php-ext-install -j$(nproc) gd
 
 # php extension intl : 15.26s
@@ -76,12 +84,16 @@ RUN apt-get update && \
     apt-get install -y \
         bash \
         haveged \
+        libavif-bin \
+        libjpeg62-turbo-dev \
         libicu72 \
         libldap-common \
         libpng16-16 \
         libzip4 \
         libxslt1.1 \
-        libfreetype6 && \
+        libfreetype6 \
+        libwebp7 \
+        libxpm4 && \
     a2enmod rewrite
 
 EXPOSE 80
@@ -133,11 +145,16 @@ WORKDIR /opt/drupal
 ########################
 FROM base AS composer-base
 COPY --from=composer /usr/bin/composer /usr/bin/composer
-RUN apt update && \
-    apt install -y git && \
-    mkdir -p /composer  && \
-    chown -R www-data:www-data /composer && \
-    composer install --no-ansi
+RUN apt update
+RUN apt install -y git npm
+RUN npm install -g corepack
+RUN corepack prepare yarn@stable --activate
+RUN mkdir -p /composer
+RUN chown -R www-data:www-data /composer
+RUN composer install --no-ansi
+RUN yarn --cwd /opt/drupal/web/themes/custom/nrfc_barrio
+RUN /opt/drupal/web/themes/custom/nrfc_barrio/node_modules/.bin/gulp --cwd /opt/drupal/web/themes/custom/nrfc_barrio styles
+RUN /opt/drupal/web/themes/custom/nrfc_barrio/node_modules/.bin/gulp --cwd /opt/drupal/web/themes/custom/nrfc_barrio js
 
 ########################
 # final build
@@ -148,6 +165,11 @@ COPY --from=composer-base /opt/drupal /opt/drupal
 COPY 000-apache.conf /etc/apache2/sites-enabled/000-default.conf
 COPY settings.98_docker_override.php /opt/drupal/web/sites/default/settings.98_docker_override.php
 COPY settings.99_db.php /opt/drupal/web/sites/default/settings.99_db.php
+
+RUN cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini && \
+    sed -i "s/2M/16M/" /usr/local/etc/php/php.ini && \
+    sed -i "s/8M/16M/" /usr/local/etc/php/php.ini && \
+    sed -i 's/"GPCS"/"EGPCS"/' /usr/local/etc/php/php.ini
 
 ENV MYSQL_DATABASE=drupal
 ENV MYSQL_USER=drupal
